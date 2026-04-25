@@ -1,4 +1,4 @@
-- name: monodb configure
+- name: mongodb configure
   hosts: mongodb
   become: true
   tasks:
