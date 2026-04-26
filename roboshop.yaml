@@ -28,12 +28,12 @@
           Name: "{{ item }} - {{ env }}"
      loop: "{{ instances }}"
      register: ec2_output #to see the output of ec2 instance creation
-     when: action == 'create'
+     when: action == "create"
 
    - name: print the output
      ansible.builtin.debug:
         msg: "{{ ec2_output }}"
-     when: action == 'create'
+     when: action == "create"
 
    - name: create r53 record 
      amazon.aws.route53:
@@ -46,7 +46,7 @@
       wait: false
       overwrite: true
      loop: "{{ ec2_output.results }}"
-     when: action == 'create'
+     when: action == "create"
 
 
    - name: create r53 record 
@@ -62,7 +62,7 @@
      loop: "{{ ec2_output.results }}"
      when: #and 
       - item.item == 'frontend' #roboshop-dev.pavanreddy.online should point to frontend public IP address only
-      - action == 'create'
+      - action == "create"
 
   ### DESTROY###
 
