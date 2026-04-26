@@ -69,4 +69,4 @@
 
   - name: load the products
     ansible.builtin.shell: mongosh --host "{{MONGODB_HOST}}" --quiet  < /app/db/master-data.js
-    when: catalogue_output.stdout < 0 #if catalogue database is not present then only load the schema
+    when: catalogue_output.stdout | int < 0 #if catalogue database is not present then only load the schema
