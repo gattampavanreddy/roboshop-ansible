@@ -67,6 +67,14 @@
     ansible.builtin.debug:
       msg: "{{ catalogue_output }}"
 
-  - name: load the products
+  - name: load the products 
     ansible.builtin.shell: mongosh --host "{{MONGODB_HOST}}" --quiet  < /app/db/master-data.js
-    when: catalogue_output.stdout | int < 0 #if catalogue database is not present then only load the schema
+    when: catalogue_output.stdout | int < 0 
+    #if catalogue database is not present then only load the schema
+    #if std is positive then skipping the products loading, if std is negative then loading the products
+
+  - name: start and enable catalogue service
+    ansible.builtin.service:
+      name: catalogue
+      enabled: yes
+      state: started
