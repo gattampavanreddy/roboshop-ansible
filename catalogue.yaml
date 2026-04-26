@@ -19,11 +19,21 @@
       home: /app
       shell: /sbin/nologin  
       comment: "Roboshop system user"
+
+  - name: delete old app directory if exists #if developer run the playbook multiple times then it will delete the old app directory and create a new one, so that we can avoid any issues with old files
+    ansible.builtin.file:
+       path: /app
+       state: absent
   
   - name: create app directory #ansible app module does not have option to create directory with specific owner and group, so we are using file module to create directory with specific owner and group 
     ansible.builtin.file:
       path: /app
       state: directory
+
+  - name: delete catalogue zip file if exists #if developer run the playbook multiple times then it will delete the old catalogue zip file and download a new one, so that we can avoid any issues with old files
+    ansible.builtin.file:
+      path: /tmp/catalogue.zip
+      state: absent
 
   - name: Download catalogue code #ansible download file from s3 bucket using get_url module
     ansible.builtin.get_url:
@@ -71,9 +81,10 @@
     ansible.builtin.shell: mongosh --host "{{MONGODB_HOST}}" --quiet  < /app/db/master-data.js
     when: catalogue_output.stdout | int < 0 
     #if catalogue database is not present then only load the schema
-    #if std is positive then skipping the products loading, if std is negative then loading the products
+    #if std is positive then skipping the products loading, 
+    #if std is negative then loading the products
 
-  - name: start catalogue service
+  - name: start and enable catalogue service
     ansible.builtin.service:
       name: catalogue   
       state: started
