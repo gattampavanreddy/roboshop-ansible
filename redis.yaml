@@ -1,0 +1,37 @@
+- name: configure redis server
+  hosts: redis
+  become: yes
+  tasks:
+  - name: enable redis module
+    ansible.builtin.command: dnf module enable redis:7 -y
+
+  - name: install redis server
+    ansible.builtin.dnf:
+      name: redis
+      state: present
+
+#Update listen address from 127.0.0.1 to 0.0.0.0 in /etc/redis/redis.conf
+
+  - name: allow remote connections
+    ansible.builtin.replace:
+      path: /etc/redis/redis.conf
+      regexp: '127.0.0.1'
+      replace: '0.0.0.0'
+
+#Update protected-mode from yes to no in /etc/redis/redis.conf
+#ansible replace lineinfile using regexp and replace options
+
+#to manage words use -replace keyword
+#to manage lines use -lineinfile keyword
+
+  - name: disable protected mode
+    ansible.builtin.lineinfile:
+      path: /etc/redis/redis.conf
+      regexp: 'protected-mode yes'
+      replace: 'protected-mode no'
+
+  - name: start and enable redis
+    ansible.builtin.service:
+      name: redis
+      enabled: yes
+      state: started
