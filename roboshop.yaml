@@ -28,12 +28,12 @@
           Name: "{{ item }} - {{ env }}"
      loop: "{{ instances }}"
      register: ec2_output #to see the output of ec2 instance creation
-     when: action == "create"
+     when: action == 'create'
 
    - name: print the output
      ansible.builtin.debug:
         msg: "{{ ec2_output }}"
-     when: action == "create"
+     when: action == 'create'
 
    - name: create r53 record 
      amazon.aws.route53:
@@ -46,7 +46,7 @@
       wait: false
       overwrite: true
      loop: "{{ ec2_output.results }}"
-     when: action == "create"
+     when: action == 'create'
 
 
    - name: create r53 record 
@@ -62,35 +62,28 @@
      loop: "{{ ec2_output.results }}"
      when: #and 
       - item.item == 'frontend' #roboshop-dev.pavanreddy.online should point to frontend public IP address only
-      - action == "create"
-      
-    ### DESTROY ###
-      - name: delete r53 records for frontend
-        amazon.aws.route53:
-          state: absent
-          zone: "{{ domain_name }}"
-          record: "roboshop-{{ env }}.{{ domain_name }}" # roboshop-dev.daws88s.online
-          type: A
-          ttl: 1
-        loop: "{{ instances }}"
-        when:  # and
-        - item == "frontend"
-        - action == "destroy"
+      - action == 'create'
 
+  ### DESTROY###
       - name: delete r53 records
         amazon.aws.route53:
           state: absent
-          zone: "{{ domain_name }}"
-          record: "{{ item }}-{{ env }}.{{ domain_name }}" # roboshop-dev.daws88s.online
+          zone: "{{ domain_name }}" 
+          record: "roboshop-{{ env }}.{{ domain_name }}" #roboshop-dev.pavanreddy.online
           type: A
           ttl: 1
         loop: "{{ instances }}"
-        when: action == "destroy"
-
-      - name: delete ec2 instance
-        amazon.aws.ec2_instance:
-          state: absent
-          name: "{{ item }}-{{ env }}"
-          wait: false
+        when: 
+          - item == 'frontend' #roboshop-dev.pavanreddy.online should point to frontend public IP address only
+          - action == 'destroy'
+  
+      - name: delete r53 records
+        amazon.aws.route53:
+        state: absent
+        zone: "{{ domain_name }}" 
+        record: "{{ item }}-{{ env }}.{{ domain_name }}" #mongodb-dev.pavanreddy.online, frontend-dev.pavanreddy.online
+        type: A
+        ttl: 1
         loop: "{{ instances }}"
-        when: action == "destroy"
+        when: action == 'destroy'
+  
