@@ -1,3 +1,5 @@
+#ansible-playbook -i inventory.ini catalogue.yaml
+
 - name: configure catalogue
   hosts: catalogue
   become: yes
@@ -33,3 +35,34 @@
       src: /tmp/catalogue.zip
       dest: /app
       remote_src: yes
+
+  - name: install npm dependencies #ansible npm install using command module
+    community.general.npm:
+      path: /app
+
+  - name: copy catalogue systemd service file
+    ansible.builtin.copy:
+      src: catalogue.service
+      dest: /etc/systemd/system/catalogue.service
+
+
+#To load schema / master data we need to install mongodb client and then we can load it.
+#To have mongo client installed we have to setup MongoDB repo and install mongodb-client.
+
+  - name: copy mongo repo
+    ansible.builtin.copy:
+      src: mongo.repo
+      dest: /etc/yum.repos.d/mongo.repo
+
+  - name: install mongodb client
+    ansible.builtin.dnf:
+      name: mongodb-org-shell
+      state: present
+
+  - name: check products loaded   #load catalogue schema
+    ansible.builtin.command: mongosh --host "{{MONGODB_HOST}}" --quiet  --eval 'db.getMongo().getDBNames().indexOf("catalogue")'
+    register: catalogue_output
+
+  - name: print the output
+    ansible.builtin.debug:
+      msg: "{{ catalogue_output }}"
