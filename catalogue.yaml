@@ -1,0 +1,35 @@
+- name: configure catalogue
+  hosts: catalogue
+  become: yes
+  tasks: 
+  - name: enable nodejs 20   #ansible dnf module does not have option to enable nodejs 20 module, so we are using command module to enable nodejs 20 module
+    ansible.builtin.command: dnf module enable nodejs:20 -y
+
+  - name: install nodejs
+    ansible.builtin.dnf:
+      name: nodejs
+      state: present
+
+  - name: create system user roboshop #ansible user module does not have option to create user with shell, so we are using command module to create user with shell
+    ansible.builtin.user:
+      name: roboshop
+      system: true
+      home: /app
+      shell: /sbin/nologin  
+      comment: "Roboshop system user"
+  
+  - name: create app directory #ansible app module does not have option to create directory with specific owner and group, so we are using file module to create directory with specific owner and group 
+    ansible.builtin.file:
+      path: /app
+      state: directory
+
+  - name: Download catalogue code #ansible download file from s3 bucket using get_url module
+    ansible.builtin.get_url:
+      url: https://roboshop-artifacts.s3.amazonaws.com/catalogue-v3.zip
+      dest: /tmp/catalogue.zip
+
+  - name: unzip the catalogue code  #ansible unzip the catalogue code using unarchive module
+    ansible.builtin.unarchive:
+      src: /tmp/catalogue.zip
+      dest: /app
+      remote_src: yes
