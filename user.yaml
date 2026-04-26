@@ -49,7 +49,7 @@
       path: /app
 
   - name: copy user service
-    ansible.builtin.template:
+    ansible.builtin.template:  #same like copy module but it will replace the variables in the template file with the values from the inventory file, so we are using template module to copy the user service file
       src: user.service
       dest: /etc/systemd/system/user.service
 
