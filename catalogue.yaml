@@ -56,7 +56,7 @@
 
   - name: install mongodb client
     ansible.builtin.dnf:
-      name: mongodb-org-shell
+      name: mongodb-mongosh 
       state: present
 
   - name: check products loaded   #load catalogue schema
