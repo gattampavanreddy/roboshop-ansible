@@ -73,8 +73,8 @@
     #if catalogue database is not present then only load the schema
     #if std is positive then skipping the products loading, if std is negative then loading the products
 
-  - name: start and enable catalogue service
+  - name: start catalogue service
     ansible.builtin.service:
-      name: catalogue
-      enabled: yes
+      name: catalogue   
       state: started
+      enabled: yes
