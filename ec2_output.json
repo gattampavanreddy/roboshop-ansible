@@ -10,7 +10,7 @@
                 "instance_ids": [
                     "i-09c44aba8f8b54939"
                 ],
-                "instances": [
+                "instances": [  
                     {
                         "ami_launch_index": 0,
                         "architecture": "x86_64",

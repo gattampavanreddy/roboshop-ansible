@@ -46,7 +46,7 @@
       dest: /app
       remote_src: yes
 
-  - name: install npm dependencies #ansible npm install using command module
+  - name: install npm dependencies #ansible npm install using command module, community module 
     community.general.npm:
       path: /app
 
