@@ -1,0 +1,49 @@
+- name: configure frontend server
+  hosts: frontend
+  become: yes
+  tasks:
+  - name: enable nginx 1.24
+    ansible.builtin.command: dnf module enable nginx:1.24 -y
+
+
+  - name: install nginx
+    ansible.builtin.dnf:
+      name: nginx
+      state: present
+
+  - name: delete old app directory if exists #if developer run the playbook multiple times then it will delete the old app directory and create a new one, so that we can avoid any issues with old files
+    ansible.builtin.file:
+      path: /usr/share/nginx/html
+      state: absent
+
+  - name: create app directory #ansible app module does not have option to create directory with specific owner and group, so we are using file module to create directory with specific owner and group
+    ansible.builtin.file: 
+       path: /usr/share/nginx/html
+       state: directory
+
+  - name: Download frontend code #ansible download file from s3 bucket using get_url module
+    ansible.builtin.get_url:
+      url: https://roboshop-artifacts.s3.amazonaws.com/frontend-v3.zip
+      dest: /tmp/frontend.zip
+
+  - name: unzip the frontend code  #ansible unzip the frontend code using unarchive module
+    ansible.builtin.unarchive:
+      src: /tmp/frontend.zip
+      dest: /usr/share/nginx/html
+      remote_src: yes
+
+  - name: remove default nginx configuration file #ansible remove default nginx configuration file using file module
+    ansible.builtin.file:
+       state: absent
+       path: /etc/nginx/nginx.conf
+
+  - name: copy nginx configuration file #ansible copy nginx configuration file using template module
+    ansible.builtin.template:
+      src: nginx.conf
+      dest: /etc/nginx/nginx.conf
+
+  - name: restart nginx service #ansible restart nginx service using systemd module
+    ansible.builtin.service:
+      name: nginx
+      state: restarted
+      enabled: yes
